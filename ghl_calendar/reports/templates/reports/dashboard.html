@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard de Métricas GHL</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background: #f9fafb;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+        }
+        h1 {
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+        .controls {
+            margin-bottom: 30px;
+        }
+        label {
+            margin-right: 10px;
+        }
+        button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #2563eb;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 500px;
+        }
+        canvas {
+            width: 100% !important;
+            height: 400px !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dashboard de Métricas GHL</h1>
+
+    <!-- 🗓️ Filtros de fecha -->
+    <div class="controls">
+        <label>Desde: <input type="date" id="start"></label>
+        <label>Hasta: <input type="date" id="end"></label>
+        <button onclick="cargarDatos()">Actualizar</button>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="metricsChart"></canvas>
+    </div>
+
+    <script>
+        let chart; // variable global para destruir el gráfico previo
+
+        async function cargarDatos() {
+            try {
+                const start = document.getElementById('start').value;
+                const end = document.getElementById('end').value;
+
+                let url = '/metrics/';
+                if (start && end) {
+                    url += `?start=${start}&end=${end}`;
+                }
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.error) {
+                    console.error("Error desde backend:", data.error);
+                    alert("Error: " + data.error);
+                    return;
+                }
+
+                const labels = ['Creadas', 'Confirmadas', 'Canceladas'];
+                const valores = [
+                    data.created || 0,
+                    data.confirmed || 0,
+                    data.cancelled || 0
+                ];
+
+                const ctx = document.getElementById('metricsChart').getContext('2d');
+
+                // Si ya existe un gráfico previo, destruirlo antes de crear otro
+                if (chart) chart.destroy();
+
+                chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: `Citas (${data.start || ''} a ${data.end || ''})`,
+                            data: valores,
+                            backgroundColor: [
+                                '#3b82f6', // azul
+                                '#22c55e', // verde
+                                '#ef4444'  // rojo
+                            ],
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error al cargar métricas:", error);
+                alert("Error al cargar datos");
+            }
+        }
+
+        // Cargar datos iniciales al entrar
+        cargarDatos();
+    </script>
+</body>
+</html>

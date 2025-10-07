@@ -1,0 +1,7 @@
+Django==5.0.6
+djangorestframework==3.15.2
+python-decouple==3.8
+requests==2.32.3
+pytz==2024.1
+pytest
+pytest-django
