@@ -11,11 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -24,19 +22,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Set environment variables
+      - name: Create .env for tests
         run: |
           echo "DEBUG=False" >> .env
-          echo "SECRET_KEY=dummy-key-for-ci" >> .env
+          echo "SECRET_KEY=test-key" >> .env
           echo "GHL_BASE_URL=https://services.leadconnectorhq.com" >> .env
-          echo "GHL_PRIVATE_TOKEN=dummy-token" >> .env
-          echo "GHL_LOCATION_ID=dummy-location" >> .env
-          echo "GHL_CALENDAR_ID=dummy-calendar" >> .env
+          echo "GHL_PRIVATE_TOKEN=test-token" >> .env
+          echo "GHL_LOCATION_ID=test-location" >> .env
+          echo "GHL_CALENDAR_ID=test-calendar" >> .env
 
-      - name: Run Django migrations
-        run: |
-          python manage.py migrate
+      - name: Run migrations
+        run: python manage.py migrate
 
-      - name: Run Pytest
-        run: |
-          pytest -v
+      - name: Run tests
+        run: pytest -v
