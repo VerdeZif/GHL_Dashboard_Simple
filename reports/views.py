@@ -5,7 +5,6 @@ import requests
 import datetime
 import calendar
 from datetime import timezone
-from collections import defaultdict
 
 
 def to_millis(dt: datetime.datetime) -> int:
@@ -16,10 +15,8 @@ def to_millis(dt: datetime.datetime) -> int:
 # --- MÉTRICAS DESDE GHL ---
 def appointments_metrics(request):
     """
-    Devuelve métricas completas desde GHL:
-    - Totales (creadas, confirmadas, canceladas)
-    - Serie diaria (para líneas y barras)
-    - Datos adicionales (scatter y bubble)
+    Devuelve métricas básicas: citas creadas, confirmadas, canceladas.
+    Soporta rango dinámico: ?start=YYYY-MM-DD&end=YYYY-MM-DD o ?days=30 (por defecto últimos 7 días)
     """
     api_key = settings.GHL_PRIVATE_TOKEN
     base_url = settings.GHL_BASE_URL.rstrip('/')
@@ -35,11 +32,12 @@ def appointments_metrics(request):
         "Version": "2021-07-28",
     }
 
-    # Rango de fechas
+    # 🗓️ Leer parámetros GET opcionales
     start_str = request.GET.get("start")
     end_str = request.GET.get("end")
     days_str = request.GET.get("days")
 
+    # Si el usuario manda fechas personalizadas
     if start_str and end_str:
         try:
             start_dt = datetime.datetime.strptime(start_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
@@ -47,6 +45,7 @@ def appointments_metrics(request):
         except ValueError:
             return JsonResponse({"error": "Formato de fecha inválido. Usa YYYY-MM-DD"}, status=400)
     else:
+        # Por defecto últimos X días
         end_dt = datetime.datetime.now(timezone.utc)
         days = int(days_str) if days_str else 7
         start_dt = end_dt - datetime.timedelta(days=days)
@@ -73,68 +72,19 @@ def appointments_metrics(request):
         data = r.json()
         events = data.get("events", [])
 
-        # ---------------------------
-        # Totales
-        # ---------------------------
+        # Contar estados
         created = len(events)
         confirmed = sum(1 for e in events if e.get("appointmentStatus") == "confirmed")
         cancelled = sum(1 for e in events if e.get("appointmentStatus") == "cancelled")
 
-        # ---------------------------
-        # Serie diaria + datos extra
-        # ---------------------------
-        daily_counts = defaultdict(lambda: {"created": 0, "confirmed": 0, "cancelled": 0})
-        scatter_data, bubble_data = [], []
-
-        for e in events:
-            timestamp = e.get("startTime")
-            if not timestamp:
-                continue
-
-            dt = datetime.datetime.fromtimestamp(timestamp / 1000, tz=timezone.utc).date()
-            status = e.get("appointmentStatus", "created").lower()
-            duration = e.get("durationMinutes", 0)
-            value = e.get("price", 0) or duration
-
-            daily_counts[dt]["created"] += 1
-            if status == "confirmed":
-                daily_counts[dt]["confirmed"] += 1
-            elif status == "cancelled":
-                daily_counts[dt]["cancelled"] += 1
-
-            # Scatter: hora vs duración
-            try:
-                start = datetime.datetime.fromtimestamp(e["startTime"] / 1000, tz=timezone.utc)
-                scatter_data.append({
-                    "x": start.hour,
-                    "y": duration
-                })
-                # Bubble: día vs duración, tamaño proporcional
-                bubble_data.append({
-                    "x": start.day,
-                    "y": duration,
-                    "r": max(3, min(value / 10, 30))
-                })
-            except:
-                continue
-
-        # Convertir serie diaria a lista
-        daily_data = [
-            {"date": d.strftime("%Y-%m-%d"), **v}
-            for d, v in sorted(daily_counts.items())
-        ]
-
+        # ✅ Forzar a enteros (para los tests)
         return JsonResponse({
-            "created": created,
-            "confirmed": confirmed,
-            "cancelled": cancelled,
-            "daily_data": daily_data,
-            "scatter_data": scatter_data,
-            "bubble_data": bubble_data,
+            "created": int(created),
+            "confirmed": int(confirmed),
+            "cancelled": int(cancelled),
             "start": start_dt.strftime("%Y-%m-%d"),
             "end": end_dt.strftime("%Y-%m-%d")
         })
-
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
@@ -143,3 +93,4 @@ def appointments_metrics(request):
 def dashboard_view(request):
     """Renderiza el panel HTML del dashboard."""
     return render(request, "reports/dashboard.html")
+
