@@ -1,0 +1,167 @@
+/* 🎨 Variables CSS para colores */
+:root {
+  --bg-color: #f3f4f6;
+  --card-bg: white;
+  --text-color: #111827;
+  --heading-color: #1f2937;
+  --border-color: #d1d5db;
+  --shadow-color: rgba(0, 0, 0, 0.08);
+}
+
+/* 🌙 Modo Oscuro */
+.dark-mode {
+  --bg-color: #1f2937;
+  --card-bg: #374151;
+  --text-color: #f3f4f6;
+  --heading-color: #d1d5db;
+  --border-color: #4b5563;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+/* ✨ Transición global */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 🧱 General */
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: var(--bg-color);
+  margin: 0;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-color);
+}
+
+h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 25px;
+  color: var(--heading-color);
+}
+
+/* ⚙️ Controles */
+.controls {
+  background: var(--card-bg);
+  border-radius: 14px;
+  padding: 15px 25px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+  box-shadow: 0 3px 10px var(--shadow-color);
+}
+
+label {
+  font-weight: 500;
+}
+
+input[type="date"] {
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+  color: var(--text-color);
+}
+
+/* 🔘 Botones */
+button {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+button:hover {
+  background-color: #1e40af;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+/* ☀️🌙 Botón modo oscuro */
+.mode-toggle {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+}
+
+#mode-switch {
+  font-size: 20px;
+  padding: 8px 12px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+#mode-switch:hover {
+  background-color: var(--border-color);
+}
+
+/* 📊 Dashboard */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 25px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.chart-card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 14px var(--shadow-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+canvas {
+  width: 100% !important;
+  height: 350px !important;
+}
+
+/* 📈 Tarjetas resumen */
+.summary {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 25px;
+  gap: 15px;
+}
+
+.summary-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 20px;
+  flex: 1;
+  text-align: center;
+  box-shadow: 0 3px 10px var(--shadow-color);
+  transition: transform 0.2s ease, background 0.3s;
+}
+
+.summary-card:hover {
+  transform: scale(1.03);
+}
+
+.summary-card h3 {
+  font-size: 18px;
+  margin-bottom: 8px;
+  color: var(--heading-color);
+}
+
+.summary-card p {
+  font-size: 22px;
+  font-weight: 600;
+  color: #2563eb;
+  margin: 0;
+}
